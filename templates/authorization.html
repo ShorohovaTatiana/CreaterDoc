@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Авторизация</title>
+    {% include "components/connection.html" %}
+</head>
+<body>
+<!--{% include "components/header.html" %}-->
+
+<section class="authorization_container">
+    <div class="authorization_wrapper">
+        <h1 class="mainHeading">Аутентификация</h1>
+        <form class="authorization_form" id="form">
+            <div>
+                <input class="form_item" placeholder="Введите почту"/>
+            </div>
+            <div>
+                <input class="form_item" type="password" placeholder="Введите пароль"/>
+            </div>
+            <div>
+                <button class="form_button">Авторизоваться</button>
+            </div>
+            <div>
+                Ещё нет аккаунта? <a href="/registration" class="proposalLink">Зарегистрироваться</a>
+            </div>
+        </form>
+    </div>
+</section>
+
+<script>
+    const form = document.getElementById('form')
+    form.onsubmit = async (e) => {
+        e.preventDefault()
+        const formItems = document.getElementsByClassName('form_item');
+        const email = formItems[0].value
+        const password = formItems[1].value
+        if (!email) return alert('Вы не ввели почту')
+        if (!password) return alert('Вы не ввели пароль')
+        if (!email.match(/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i)) return alert('Неверный формат почты')
+        if (password.length <= 6) return alert('Длина пароля должна быть более 6 символов')
+        const body = {
+            email, password
+        }
+        try {
+            await axios.post('/api/login', body)
+            alert('Вы успешно авторизованы')
+            return window.location.href = '/'
+        } catch (e) {
+            alert(e?.response?.data?.message || "Что- то пошло не так")
+        }
+    }
+</script>
+
+</body>
+</html>

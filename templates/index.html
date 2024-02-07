@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Главная</title>
+    {% include "components/connection.html" %}
+</head>
+<body>
+{% include "components/header.html" %}
+
+
+<!-- Для студента - сохранить записку -->
+
+
+<!-- Для преподователя -  -->
+
+<section class="container">
+    <div class="wrapper">
+        <div>
+            <h2>Выберите состав пакета документов</h2>
+            <select class="select_item">
+                <option value="0">Не выбрано</option>
+                <option value="enrollment">Зачисление на курс</option>
+                <option value="deduction">Отчисление</option>
+                <option value="officialMemo">Служебная записка</option>
+            </select>
+        </div>
+        <div id="directionBlock">
+            <h2>Выберите общеразвивающую программу</h2>
+            <select class="select_item">
+                <option value="0">Не выбрано</option>
+                <option value="acquaintance">Знакомство с Python</option>
+                <option value="analyze">Python и анализ данных</option>
+            </select>
+        </div>
+        <input type="date" class="calendar select_item">
+
+        <button class="button" id="btn">
+            Сохранить
+        </button>
+    </div>
+</section>
+
+<script>
+    const selectus = document.getElementsByClassName('select_item')
+    const typeSelect = selectus[0]
+    const directionSelect = selectus[1]
+    const btn = document.getElementById('btn')
+
+    typeSelect.onchange = (e) => {
+        const directionBlock = document.getElementById('directionBlock')
+        if (e.target.value === 'officialMemo') {
+            directionBlock.style.display = 'none'
+        } else {
+            directionBlock.style.display = 'block'
+        }
+    }
+
+    btn.onclick = async () => {
+        console.log(selectus)
+        if (typeSelect.value === '0') return alert('Вы не выбрали тип документа')
+        if (directionSelect.value === '0' && typeSelect.value !== 'officialMemo') return alert('Вы не выбрали направление')
+        if(!selectus[2].value) return alert('Выбирете дату')
+
+        const body = {
+            type: typeSelect.value,
+            direction: directionSelect.value,
+            date: selectus[2].value
+        }
+
+        const response = await fetch('/api/download', {
+            method: 'POST',
+            body: JSON.stringify(body),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        let blobResponse = await response.blob()
+        const fileName = directionSelect.value !== '0' ?
+            `${typeSelect.value}-${directionSelect.value}.docx`
+                : `${typeSelect.value}.docx`
+        downloadExcelSilently(blobResponse, fileName)
+    }
+
+
+    function downloadExcelSilently(blobExcelFile, filename) {
+        const url = window.URL.createObjectURL(blobExcelFile);
+        const hiddenAnchor = document.createElement("a");
+        hiddenAnchor.style.display = "none";
+        hiddenAnchor.href = url;
+        hiddenAnchor.download = filename;
+        document.body.appendChild(hiddenAnchor);
+        hiddenAnchor.click();
+        window.URL.revokeObjectURL(url);
+    }
+
+</script>
+
+
+</body>
+</html>
